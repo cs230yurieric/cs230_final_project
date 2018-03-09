@@ -36,7 +36,8 @@ SIZE = 224
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='data/spectrograms', help="Directory with the spectrogram dataset")
-parser.add_argument('--output_dir', default='data/224x224_spectrograms', help="Where to write the new data")
+parser.add_argument('--output_dir', default='data/altered_spectrograms', help="Where to write the new data")
+parser.add_argument('--seed', default='1', help="Seed for random shuffling of files into train, dev, test sets")
 
 
 def deborder_and_save(filename, output_dir, size=SIZE):
@@ -61,25 +62,25 @@ if __name__ == '__main__':
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
 
     # Define the data directories
-    train_data_dir = os.path.join(args.data_dir, 'train_spec')
-    test_data_dir = os.path.join(args.data_dir, 'test_spec')
-
     # Get the filenames in each directory (train and test)
-    filenames = os.listdir(train_data_dir)
-    filenames = [os.path.join(train_data_dir, f) for f in filenames if f.endswith('.png')]
 
-    test_filenames = os.listdir(test_data_dir)
-    test_filenames = [os.path.join(test_data_dir, f) for f in test_filenames if f.endswith('.png')]
+    data_dir = os.path.join(args.data_dir)
+    filenames = os.listdir(data_dir)
+    filenames = [os.path.join(data_dir, f) for f in filenames if f.endswith('.png')]
 
-    # Split the images in 'train_signs' into 80% train and 20% dev
+    # Split the images into 80% train, 10% dev, 10% test
     # Make sure to always shuffle with a fixed seed so that the split is reproducible
-    random.seed(230)
+    #random.seed(230)
+    random.seed(int(args.seed))
     filenames.sort()
     random.shuffle(filenames)
 
-    split = int(0.8 * len(filenames))
-    train_filenames = filenames[:split]
-    dev_filenames = filenames[split:]
+    split1 = int(0.8 * len(filenames))
+    split2 = int(0.9 * len(filenames))
+
+    train_filenames = filenames[:split1]
+    dev_filenames = filenames[split1:split2]
+    test_filenames = filenames[split2:]
 
     filenames = {'train': train_filenames,
                  'dev': dev_filenames,
